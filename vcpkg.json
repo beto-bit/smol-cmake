@@ -1,0 +1,4 @@
+{
+    "name": "smol",
+    "dependencies": ["fmt"]
+}
