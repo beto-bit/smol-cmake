@@ -50,6 +50,6 @@ constexpr std::optional<std::size_t> binary_search(
         container,
         target,
         0,
-        container.size()
+        container.size() - 1
     );
 }
