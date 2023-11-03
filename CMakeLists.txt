@@ -10,6 +10,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 include(vcpkg/scripts/buildsystems/vcpkg.cmake)
 
 add_executable(main src/main.cpp src/add.hpp)
+target_include_directories(main PRIVATE include)
 
 find_package(fmt CONFIG REQUIRED)
 target_link_libraries(main PRIVATE fmt::fmt)

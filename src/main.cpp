@@ -7,6 +7,7 @@
 #include <fmt/core.h>
 
 #include "add.hpp"
+#include "bin_search.hpp"
 
 
 constexpr auto sum_all(const std::ranges::range auto& container) {
@@ -16,9 +17,10 @@ constexpr auto sum_all(const std::ranges::range auto& container) {
 struct Juan{};
 
 int main() {
-    constexpr std::array arr{ 1, 2, 3, 4, 5 };
-    constexpr int ss = sum(1, 2, 3, 4, 5);
+    constexpr std::array arr{0, 1, 2, 3, 4, 5 };
 
-    fmt::println("{}", ss);
+    constexpr auto index = binary_search(arr, 2);
+
+    fmt::println("Index is {}", index.value_or(-1));
 }
 
