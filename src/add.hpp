@@ -7,3 +7,12 @@ template <Numeric T>
 constexpr auto sum_two(T first, T second) {
     return first + second;
 }
+
+constexpr auto sum() {
+    return 0;
+}
+
+template <Numeric T, Numeric... Ts>
+constexpr auto sum(T first, Ts... args) {
+    return first + sum(args...);
+}

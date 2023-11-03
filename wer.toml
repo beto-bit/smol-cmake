@@ -1,5 +1,9 @@
 [build]
 dir = "build"
+generator = "Ninja"
+
+[unix]
+generator = "Unix Makefiles"
 
 [vcpkg]
 enable = true

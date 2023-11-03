@@ -25,6 +25,19 @@ def get_vcpkg_exe() -> str:
 
     return "./vcpkg/vcpkg"
 
+def get_generator(config) -> str:
+    platform_config = None
+
+    if platform.system() == "Windows":
+        platform_config = config.get("windows")
+    else:
+        platform_config = config.get("unix")
+
+    if platform_config:
+        return platform_config.get("generator")
+
+    return config["build"].get("generator")
+
 
 # Main group
 @click.group()
@@ -61,7 +74,7 @@ def clean():
 def configure(create_ccs):
     """Configures the project"""
 
-    click.echo("Building the project...")
+    click.echo("Configuring the project...")
 
     # There should be a better way to do this
     env_vars = {
@@ -70,6 +83,9 @@ def configure(create_ccs):
     }
 
     commands = ["cmake", "-S", ".", "-B", BUILD_DIR]
+
+    if GENERATOR:
+        commands.append(f"-G {GENERATOR}")
 
     if VCPKG_ENABLE:
         if os.path.exists(VCPKG_DIR):
@@ -131,6 +147,7 @@ def uninstall():
 # Global variables
 CONFIG = get_config()
 BUILD_DIR = CONFIG["build"]["dir"]
+GENERATOR = get_generator(CONFIG)
 
 VCPKG_ENABLE = CONFIG["vcpkg"]["enable"]
 
