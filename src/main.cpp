@@ -4,6 +4,8 @@
 #include <ranges>
 #include <span>
 
+#include <fmt/core.h>
+
 #include "add.hpp"
 
 
@@ -16,6 +18,6 @@ int main() {
     constexpr std::array arr{ 1, 2, 3, 4, 5 };
     constexpr int sum = sum_all(arr);
 
-    std::cout << sum << std::endl;
+    fmt::println("{}", sum);
 }
 
