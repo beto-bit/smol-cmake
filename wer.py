@@ -14,14 +14,14 @@ def get_config() -> dict[str, Any]:
     with open("wer.toml", "rb") as f:
         return tomllib.load(f)
 
-def get_platform(config) -> dict[str, Any] | None:
+def get_platform_config(config) -> dict[str, Any] | None:
     if platform.system() == "Windows":
         return config.get("windows")
     
     return config.get("unix")
 
 def get_generator(config) -> str | None:
-    platform_config = get_platform(config)
+    platform_config = get_platform_config(config)
 
     if platform_config:
         return platform_config.get("generator")
@@ -30,13 +30,13 @@ def get_generator(config) -> str | None:
 
 
 def get_c_compiler(config) -> str | None:
-    platform_config = get_platform(config)
+    platform_config = get_platform_config(config)
 
     if platform_config:
         return platform_config.get("cc")
 
 def get_cxx_compiler(config) -> str | None:
-    platform_config = get_platform(config)
+    platform_config = get_platform_config(config)
 
     if platform_config:
         return platform_config.get("cxx")
