@@ -9,7 +9,7 @@ generator = "Unix Makefiles"
 
 [format]
 style = "LLVM"
-dirs = ["src", "include"]
+glob = ["src/**/*.cpp", "include/**/*.hpp"]
 
 [vcpkg]
 enable = true

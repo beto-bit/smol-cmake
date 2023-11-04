@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
 import click
+import glob
 import os
 import platform
 import shutil
 import subprocess
 import tomllib
 from typing import Any, List
+from itertools import chain
 
 
 # Configuration utilities
@@ -35,8 +37,21 @@ def get_cxx_compiler(config) -> str | None:
     if platform_config := get_platform_config(config):
         return platform_config.get("cxx")
 
-def get_format_dirs(config) -> List[str]:
-    return []
+def get_format_style(config) -> str | None:
+    if format_config := config.get("format"):
+        return format_config.get("style")
+
+def get_format_files(config) -> List[str]:
+    recursive_glob = lambda x: glob.glob(x, recursive=True)
+
+    if not (format_config := config.get("format")):
+        return []
+
+    format_glob = format_config.get("glob")
+    format_files = map(recursive_glob, format_glob)
+
+    # Flatten and dedup
+    return list(set(chain.from_iterable(format_files)))
 
 def get_vcpkg_bootstrap() -> str:
     if platform.system() == "Windows":
@@ -116,9 +131,18 @@ def clean():
 
 
 @cli.command()
-def fmt():
+def format():
     """Formats source files. Defaults to LLVM style."""
-    pass
+    if format_files := get_format_files(CONFIG):
+        commands = ["clang-format", *format_files]
+
+        if format_style := get_format_style(CONFIG):
+            commands.append(f"-style={format_style}")
+
+        subprocess.run(commands)
+    else:
+        click.echo("Please provide directories in `wer.toml`")
+        return
 
 
 @cli.command()
