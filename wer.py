@@ -6,10 +6,10 @@ import platform
 import shutil
 import subprocess
 import tomllib
-from typing import Any, Tuple
+from typing import Any
 
 
-# Utility
+# Configuration utilities
 def get_config() -> dict[str, Any]:
     with open("wer.toml", "rb") as f:
         return tomllib.load(f)
@@ -29,9 +29,18 @@ def get_generator(config) -> str | None:
     return config["build"].get("generator")
 
 
-def get_compilers(config) -> Tuple[str, str] | None:
-    """Returns a tuple containing the C and C++ compilers commands"""
-    pass
+def get_c_compiler(config) -> str | None:
+    platform_config = get_platform(config)
+
+    if platform_config:
+        return platform_config.get("c")
+
+def get_cxx_compiler(config) -> str | None:
+    platform_config = get_platform(config)
+
+    if platform_config:
+        return platform_config.get("cxx")
+
 
 def get_vcpkg_bootstrap() -> str:
     if platform.system() == "Windows":
