@@ -131,10 +131,14 @@ def clean():
 
 
 @cli.command()
-def format():
+@click.option("--dry-run", is_flag=True, help="Run without doing any changes")
+def format(dry_run):
     """Formats source files. Defaults to LLVM style."""
     if format_files := get_format_files(CONFIG):
         commands = ["clang-format", *format_files]
+
+        if not dry_run:
+            commands.append("-i")
 
         if format_style := get_format_style(CONFIG):
             commands.append(f"-style={format_style}")
@@ -146,7 +150,7 @@ def format():
 
 
 @cli.command()
-@click.option("--create-ccs", default=True, help="Create compile_commands.json")
+@click.option("--create-ccs", is_flag=True, default=True, help="Create compile_commands.json")
 def configure(create_ccs):
     """Configures the project"""
 
