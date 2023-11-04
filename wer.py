@@ -6,7 +6,7 @@ import platform
 import shutil
 import subprocess
 import tomllib
-from typing import Any
+from typing import Any, List
 
 
 # Configuration utilities
@@ -33,7 +33,7 @@ def get_c_compiler(config) -> str | None:
     platform_config = get_platform(config)
 
     if platform_config:
-        return platform_config.get("c")
+        return platform_config.get("cc")
 
 def get_cxx_compiler(config) -> str | None:
     platform_config = get_platform(config)
@@ -53,6 +53,40 @@ def get_vcpkg_exe() -> str:
         return ".\vcpkg\vcpkg.exe"
 
     return "./vcpkg/vcpkg"
+
+def create_env_vars(config, create_ccs: bool) -> dict[str, str]:
+    env_vars = {
+        **os.environ,
+        "CMAKE_EXPORT_COMPILE_COMMANDS": str(int(create_ccs))
+    }
+
+    if c_compiler := get_c_compiler(config):
+        env_vars["CC"] = c_compiler
+
+    if cpp_compiler := get_cxx_compiler(config):
+        env_vars["CXX"] = cpp_compiler
+
+    return env_vars
+
+def create_cmake_commands(
+        build_dir: str,
+        generator: str | None,
+        enable_vcpkg: bool,
+        vcpkg_dir: str
+) -> List[str]:
+    commands = ["cmake", "-S", ".", "-B", build_dir]
+
+    if generator:
+        commands.append(f"-G {generator}")
+
+    if enable_vcpkg:
+        if os.path.exists(vcpkg_dir):
+            commands.append(f"-DCMAKE_TOOLCHAIN_FILE={vcpkg_dir}/scripts/buildsystems/vcpkg.cmake")
+        else:
+            click.echo("Please first run `./wer.py vcpkg setup` or disable vcpkg on `wer.toml`")
+            raise FileNotFoundError
+
+    return commands
 
 
 # Main group
@@ -93,22 +127,11 @@ def configure(create_ccs):
     click.echo("Configuring the project...")
 
     # There should be a better way to do this
-    env_vars = {
-        **os.environ,
-        "CMAKE_EXPORT_COMPILE_COMMANDS": str(int(create_ccs))
-    }
-
-    commands = ["cmake", "-S", ".", "-B", BUILD_DIR]
-
-    if GENERATOR:
-        commands.append(f"-G {GENERATOR}")
-
-    if VCPKG_ENABLE:
-        if os.path.exists(VCPKG_DIR):
-            commands.append(f"-DCMAKE_TOOLCHAIN_FILE={VCPKG_DIR}/scripts/buildsystems/vcpkg.cmake")
-        else:
-            click.echo("Please first run `./wer.py vcpkg setup` or disable vcpkg on `wer.toml`")
-            return
+    env_vars = create_env_vars(CONFIG, create_ccs)
+    commands = create_cmake_commands(BUILD_DIR,
+                                     GENERATOR,
+                                     VCPKG_ENABLE,
+                                     VCPKG_DIR)
 
     subprocess.run(commands, env=env_vars)
 
