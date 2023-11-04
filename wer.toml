@@ -3,6 +3,8 @@ dir = "build"
 generator = "Ninja"
 
 [unix]
+cc = "clang"
+cxx = "clang++"
 generator = "Unix Makefiles"
 
 [vcpkg]
