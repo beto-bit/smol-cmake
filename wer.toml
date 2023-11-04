@@ -7,5 +7,9 @@ cc = "clang"
 cxx = "clang++"
 generator = "Unix Makefiles"
 
+[format]
+style = "LLVM"
+dirs = ["src", "include"]
+
 [vcpkg]
 enable = true

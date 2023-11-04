@@ -36,3 +36,6 @@
 
 # Output dir
 build/
+
+# vcpkg things
+vcpkg_installed/

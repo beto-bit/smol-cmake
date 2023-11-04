@@ -21,26 +21,22 @@ def get_platform_config(config) -> dict[str, Any] | None:
     return config.get("unix")
 
 def get_generator(config) -> str | None:
-    platform_config = get_platform_config(config)
-
-    if platform_config:
+    if platform_config := get_platform_config(config):
         return platform_config.get("generator")
 
     return config["build"].get("generator")
 
 
 def get_c_compiler(config) -> str | None:
-    platform_config = get_platform_config(config)
-
-    if platform_config:
+    if platform_config := get_platform_config(config):
         return platform_config.get("cc")
 
 def get_cxx_compiler(config) -> str | None:
-    platform_config = get_platform_config(config)
-
-    if platform_config:
+    if platform_config := get_platform_config(config):
         return platform_config.get("cxx")
 
+def get_format_dirs(config) -> List[str]:
+    return []
 
 def get_vcpkg_bootstrap() -> str:
     if platform.system() == "Windows":
@@ -117,6 +113,12 @@ def clean():
         shutil.rmtree(BUILD_DIR)
     except FileNotFoundError:
         click.echo("Already cleaned up!")
+
+
+@cli.command()
+def fmt():
+    """Formats source files. Defaults to LLVM style."""
+    pass
 
 
 @cli.command()
