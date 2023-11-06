@@ -9,6 +9,8 @@ generator = "Unix Makefiles"
 
 [format]
 glob = ["src/**/*.cpp", "include/**/*.hpp"]
+# style = "Google"
+# exclude = ["include/head.h"]
 
 [vcpkg]
 enable = true

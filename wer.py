@@ -7,7 +7,7 @@ import platform
 import shutil
 import subprocess
 import tomllib
-from typing import Any, List
+from typing import Any, List, Set
 from itertools import chain
 
 
@@ -41,17 +41,24 @@ def get_format_style(config) -> str | None:
     if format_config := config.get("format"):
         return format_config.get("style")
 
-def get_format_files(config) -> List[str]:
+def get_excluded_format_files(config) -> Set[str]:
+    if format_config := config.get("format"):
+        if excluded_files := format_config.get("exclude"):
+            return set(excluded_files)
+
+    return set()
+
+def get_format_files(config) -> Set[str]:
     recursive_glob = lambda x: glob.glob(x, recursive=True)
 
     if not (format_config := config.get("format")):
-        return []
+        return set()
 
     format_glob = format_config.get("glob")
     format_files = map(recursive_glob, format_glob)
 
-    # Flatten and dedup
-    return list(set(chain.from_iterable(format_files)))
+    # Dedup and remove excluded files
+    return set(chain.from_iterable(format_files)) - get_excluded_format_files(config)
 
 def get_vcpkg_bootstrap() -> str:
     if platform.system() == "Windows":
