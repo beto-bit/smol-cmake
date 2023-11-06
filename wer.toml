@@ -8,7 +8,6 @@ cxx = "clang++"
 generator = "Unix Makefiles"
 
 [format]
-style = "LLVM"
 glob = ["src/**/*.cpp", "include/**/*.hpp"]
 
 [vcpkg]
