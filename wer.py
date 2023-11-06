@@ -139,9 +139,14 @@ def clean():
 
 @cli.command()
 @click.option("--dry-run", is_flag=True, help="Run without doing any changes")
-def format(dry_run):
+@click.option("--list", is_flag=True, help="Lists which files are going to be formatted")
+def format(dry_run, list):
     """Formats source files. Defaults to LLVM style."""
-    if format_files := get_format_files(CONFIG):
+    if format_files := sorted(get_format_files(CONFIG)):
+        if list:
+            click.echo('\n'.join(format_files))
+            return
+
         commands = ["clang-format", *format_files]
 
         if not dry_run:
