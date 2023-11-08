@@ -11,6 +11,37 @@ from typing import Any, List, Set
 from itertools import chain
 
 
+class WerConfig:
+    cached_config: dict[str, Any] = {}
+
+    def __init__(self):
+        if not self.cached_config:
+            self.cached_config = WerConfig.load_config()
+        
+        self.config = self.cached_config
+        self.build_config = self.config["build"]
+        self.format_config = self.config.get("format")
+    
+    def load_config() -> dict[str, Any]:
+        with open("wer.toml", "rb") as f:
+            return tomllib.load(f)
+    
+    def platform_config(self) -> str | None:
+        match platform.system():
+            case "Windows" :
+                return self.config.get("windows")
+            
+            case "Linux" :
+                if linux_config := self.config.get("linux"):
+                    return linux_config
+            
+            case "Darwin" :
+                if darwin_config := self.config.get("darwin"):
+                    return darwin_config
+        
+        return self.config.get("unix")
+
+
 # Configuration utilities
 def get_config() -> dict[str, Any]:
     with open("wer.toml", "rb") as f:
@@ -238,5 +269,10 @@ VCPKG_INSTALL_DIR = "vcpkg_installed"
 VCPKG_SCRIPT = get_vcpkg_bootstrap()
 VCPKG_EXE = get_vcpkg_exe()
 
+
 if __name__ == "__main__":
-    cli()
+    config = WerConfig()
+    print(config.config)
+    print(config.platform_config())
+
+    # cli()
