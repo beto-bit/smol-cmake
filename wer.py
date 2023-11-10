@@ -60,12 +60,12 @@ class WerConfig:
             return self.platform_config.get("cxx")
     
     @property
-    def format_style(self) -> str | None:
+    def fmt_style(self) -> str | None:
         if self.format_config:
             return self.format_config.get("style")
 
     @property
-    def format_files(self) -> Set[str]:
+    def fmt_files(self) -> Set[str]:
         recursive_glob = lambda x: glob.glob(x, recursive=True)
 
         if not self.format_config:
@@ -75,10 +75,10 @@ class WerConfig:
         format_files = map(recursive_glob, format_glob)
 
         # Dedup and remove excluded files
-        return set(chain.from_iterable(format_files), format_glob) - self.excluded_format_files
+        return set(chain.from_iterable(format_files), format_glob) - self.excluded_fmt_files
 
     @property
-    def excluded_format_files(self) -> Set[str]:
+    def excluded_fmt_files(self) -> Set[str]:
         if self.format_config:
             if excluded_files := self.format_config.get("exclude"):
                 return set(excluded_files)
@@ -145,6 +145,20 @@ def get_vcpkg_exe() -> str:
 
     return "./vcpkg/vcpkg"
 
+def create_env_vars(config: WerConfig, create_ccs: bool) -> dict[str, str]:
+    env_vars = {
+        **os.environ,
+        "CMAKE_EXPORT_COMPILE_COMMANDS": str(int(create_ccs))
+    }
+
+    if config.c_compiler:
+        env_vars["CC"] = config.c_compiler
+    
+    if config.cxx_compiler:
+        env_vars["CXX"] = config.cxx_compiler
+    
+    return env_vars
+
 def create_env_vars(config, create_ccs: bool) -> dict[str, str]:
     env_vars = {
         **os.environ,
@@ -158,6 +172,26 @@ def create_env_vars(config, create_ccs: bool) -> dict[str, str]:
         env_vars["CXX"] = cpp_compiler
 
     return env_vars
+
+def create_cmake_commands(
+    config: WerConfig,
+    build_dir: str,
+    enable_vcpkg: bool,
+    vcpkg_dir: str
+) -> List[str]:
+    commands = ["cmake", "-S", ".", "-B", build_dir]
+
+    if config.generator:
+        commands.append(f"-G {config.generator}")
+
+    if enable_vcpkg:
+        if os.path.exists(vcpkg_dir):
+            commands.append(f"-DCMAKE_TOOLCHAIN_FILE={vcpkg_dir}/scripts/buildsystems/vcpkg.cmake")
+        else:
+            click.echo("Please first run `./wer.py vcpkg setup` or disable vcpkg on `wer.toml`")
+            raise FileNotFoundError
+
+    return commands
 
 def create_cmake_commands(
         build_dir: str,
