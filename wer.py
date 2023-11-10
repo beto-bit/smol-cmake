@@ -24,7 +24,7 @@ class WerConfig:
         self.format_config: dict[str, Any] = self.config.get("format")
         self.platform_config = WerConfig.get_platform_config(self.config)
 
-        self.vcpkg_enable: str | None = self.config.get("enable")
+        self.enable_vcpkg: str | None = self.config.get("enable")
     
     def load_config() -> dict[str, Any]:
         with open("wer.toml", "rb") as f:
@@ -142,7 +142,7 @@ def build():
 
     if os.path.exists(WER_CONFIG.build_dir):
         click.echo("Building...")
-        subprocess.run(["cmake", "--build", WER_CONFIG.build_config])
+        subprocess.run(["cmake", "--build", WER_CONFIG.build_dir])
     else:
         click.echo("Please first run `./wer.py configure`")
 

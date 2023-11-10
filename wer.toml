@@ -2,6 +2,9 @@
 dir = "build"
 generator = "Ninja"
 
+[windows]
+generator = "Visual Studio 16 2019"
+
 [unix]
 cc = "clang"
 cxx = "clang++"
