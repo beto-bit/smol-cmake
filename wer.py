@@ -19,28 +19,70 @@ class WerConfig:
             self.cached_config = WerConfig.load_config()
         
         self.config = self.cached_config
-        self.build_config = self.config["build"]
-        self.format_config = self.config.get("format")
+        self.build_config: dict[str, Any] = self.config["build"]
+        self.platform_config = get_platform_config(self.config)
+        self.format_config: dict[str, Any] = self.config.get("format")
     
     def load_config() -> dict[str, Any]:
         with open("wer.toml", "rb") as f:
             return tomllib.load(f)
     
-    def platform_config(self) -> str | None:
+    def get_platform_config(config: dict[str, Any]) -> dict[str, Any] | None:
         match platform.system():
             case "Windows" :
-                return self.config.get("windows")
+                return config.get("windows")
             
             case "Linux" :
-                if linux_config := self.config.get("linux"):
+                if linux_config := config.get("linux"):
                     return linux_config
             
             case "Darwin" :
-                if darwin_config := self.config.get("darwin"):
+                if darwin_config := config.get("darwin"):
                     return darwin_config
         
-        return self.config.get("unix")
+        return config.get("unix")
+    
+    @property
+    def generator(self) -> str | None:
+        if self.platform_config:
+            return self.platform_config.get("generator")
+        
+        return self.config.get("generator")
+    
+    @property
+    def c_compiler(self) -> str | None:
+        if self.platform_config:
+            return self.platform_config.get("cc")
+    
+    @property
+    def cxx_compiler(self) -> str | None:
+        if self.platform_config:
+            return self.platform_config.get("cxx")
+    
+    @property
+    def format_style(self) -> str | None:
+        if self.format_config:
+            return self.format_config.get("style")
 
+    @property
+    def format_files(self) -> Set[str]:
+        recursive_glob = lambda x: glob.glob(x, recursive=True)
+
+        if not self.format_config:
+            return set()
+        
+        format_glob = self.format_config.get("glob")
+        format_files = map(recursive_glob, format_glob)
+
+        # Dedup and remove excluded files
+        return set(chain.from_iterable(format_files), format_glob) - self.excluded_format_files
+
+    @property
+    def excluded_format_files(self) -> Set[str]:
+        if self.format_config:
+            if excluded_files := self.format_config.get("exclude"):
+                return set(excluded_files)
+    
 
 # Configuration utilities
 def get_config() -> dict[str, Any]:
@@ -273,6 +315,5 @@ VCPKG_EXE = get_vcpkg_exe()
 if __name__ == "__main__":
     config = WerConfig()
     print(config.config)
-    print(config.platform_config())
 
     # cli()
