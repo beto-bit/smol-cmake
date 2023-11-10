@@ -19,10 +19,10 @@ class WerConfig:
             self.cached_config = WerConfig.load_config()
         
         self.config = self.cached_config
-        self.build_config: dict[str, Any] = self.config["build"]
         self.build_dir: str = self.config["build"]["dir"]
-        self.platform_config = WerConfig.get_platform_config(self.config)
+        self.build_config: dict[str, Any] = self.config["build"]
         self.format_config: dict[str, Any] = self.config.get("format")
+        self.platform_config = WerConfig.get_platform_config(self.config)
 
         self.vcpkg_enable: str | None = self.config.get("enable")
     
@@ -113,10 +113,7 @@ def create_env_vars(config: WerConfig, create_ccs: bool) -> dict[str, str]:
     
     return env_vars
 
-def create_cmake_commands(
-    config: WerConfig,
-    vcpkg_dir: str
-) -> List[str]:
+def create_cmake_commands(config: WerConfig, vcpkg_dir: str) -> List[str]:
     commands = ["cmake", "-S", ".", "-B", config.build_dir]
 
     if config.generator:
@@ -194,7 +191,7 @@ def configure(create_ccs):
     click.echo("Configuring the project...")
 
     # There should be a better way to do this
-    env_vars = create_env_vars(WER_CONFIG)
+    env_vars = create_env_vars(WER_CONFIG, create_ccs)
     commands = create_cmake_commands(WER_CONFIG, VCPKG_DIR)
 
     subprocess.run(commands, env=env_vars)
