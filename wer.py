@@ -78,13 +78,15 @@ class WerConfig:
         format_files = map(recursive_glob, format_glob)
 
         # Dedup and remove excluded files
-        return set(chain.from_iterable(format_files), format_glob) - self.excluded_fmt_files
+        return set(chain.from_iterable(format_files)) - self.excluded_fmt_files
 
     @property
     def excluded_fmt_files(self) -> Set[str]:
         if self.format_config:
             if excluded_files := self.format_config.get("exclude"):
                 return set(excluded_files)
+
+        return set()
     
 
 def get_vcpkg_bootstrap() -> str:
@@ -164,6 +166,10 @@ def clean():
 @click.option("--list", is_flag=True, help="Lists which files are going to be formatted")
 def format(dry_run, list):
     """Formats source files. Defaults to LLVM style."""
+    if not shutil.which("clang-format"):
+        click.echo("Can't find `clang-format`")
+        return
+
     if format_files := sorted(WER_CONFIG.fmt_files):
         if list:
             click.echo('\n'.join(format_files))
