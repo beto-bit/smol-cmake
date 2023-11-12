@@ -48,9 +48,10 @@ class WerConfig:
     @property
     def generator(self) -> str | None:
         if self.platform_config:
-            return self.platform_config.get("generator")
+            if generator := self.platform_config.get("generator"):
+                return generator
         
-        return self.config.get("generator")
+        return self.build_config.get("generator")
     
     @property
     def c_compiler(self) -> str | None:
